@@ -1,0 +1,124 @@
+<body bgcolor="cyan">
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@16.12.0/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16.12.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.8.3/babel.js"></script>
+
+
+    <style>
+      .box--large {
+        width: 500px;
+        min-height: 50px;
+        background-color: pink;
+        border: 3px solid blue;
+        font-size: 28px;
+      }
+    </style>
+
+
+    <script type="text/babel">
+
+    var calledOnce = false;
+
+    function App() {
+        const [fact, setFact] = React.useState('Loading...');
+        const [factsArray, setFactsArray] = React.useState([]);
+
+
+        function storeFacts(facts) {
+            let _tempArray = [];
+
+            // For each fact, display a cat button
+            for(var i = 0; i < facts.length; i++) {
+                _tempArray.push(facts[i].text);
+                document.getElementById('catBtn_' + i).style.visibility = "visible";
+            }
+            setFactsArray(_tempArray);
+        }
+
+
+        function createCatButtons() {
+            const btnArray = [0, 1, 2, 3 ,4, 5, 6]
+
+            return btnArray.map((id) => {
+                return (
+                    <button
+                        id={`catBtn_${id}`} key={`catBtn_${id}`}
+                        style={{display: "inline-block", border: "none", cursor: "pointer", visibility: "hidden"}} 
+                        onClick={() => {setFact(factsArray[id])}}>
+                        <img src={`catBtnImage_${id}.png`} width="100" alt={`catBtn_${id}`}/>
+                    </button>
+                )
+            })
+        }
+
+
+        // React.useEffect(() => {
+        //     //do nothing
+        // }, [fact]);
+
+
+        // HTTP call to get cat facts ONCE and ONLY ONCE
+        if (!calledOnce) {
+            getCatFact()
+                .then(results => {
+                    //console.log("getCatFact results=", results);
+                    storeFacts(results);
+                });
+            calledOnce = true;
+        }   
+
+
+        // render the page
+        console.log("*** RENDER ****");
+        return (
+            <div>
+                <h1>Here is an interesting fact about cats:</h1>
+                <p/>
+                <FactContainer> {fact} </FactContainer>
+                <p/>
+                {createCatButtons()}
+                <p/>
+                <hr/>
+                <p/>
+                <i>
+                    <p>
+                    Facts are:
+                    <br/>
+                    {factsArray}
+                    </p>
+                </i>
+
+            </div>
+        );
+    }
+
+
+
+    function FactContainer(props) {
+        return <div className="box--large" {...props} />
+    }
+
+  
+    // HTTP Get to query for cat facts
+    function getCatFact() {
+        console.log("*** HTTP GET: getCatFact")
+        return window.fetch('https://cat-fact.herokuapp.com/facts/', {
+            method: 'GET',
+            headers: {
+            'content-type': 'application/json;charset=UTF-8',
+            },
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.log("HTTP GET Cat Facts have error=", error);
+        })
+    }
+
+
+    // Render
+    ReactDOM.render(<App />, document.getElementById('root'));
+
+    </script>
+  
+  </body>
